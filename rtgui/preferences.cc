@@ -1927,7 +1927,7 @@ void Preferences::storePreferences ()
     moptions.toolpanels_disable = ckbTpDisable->get_active();
 
     moptions.remember_exif_filter_settings = remember_metadata_filters->get_active();
-    moptions.renaming.remember = remember_rename_options->get_active();
+    moptions.renaming_remember = remember_rename_options->get_active();
     moptions.dir_browser_single_click = dir_browser_single_click->get_active();
 
     moptions.fastexport_resize_width = fastexport_max_width->get_value();
@@ -2226,7 +2226,7 @@ void Preferences::fillPreferences ()
     ckbTpDisable->set_active(moptions.toolpanels_disable);
 
     remember_metadata_filters->set_active(moptions.remember_exif_filter_settings);
-    remember_rename_options->set_active(moptions.renaming.remember);
+    remember_rename_options->set_active(moptions.renaming_remember);
     dir_browser_single_click->set_active(moptions.dir_browser_single_click);
 
     fastexport_max_width->set_value(moptions.fastexport_resize_width);

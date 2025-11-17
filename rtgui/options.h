@@ -205,7 +205,6 @@ public:
     Glib::ustring startupPath;
     Glib::ustring profilePath; // can be an absolute or relative path; depending on this value, bundled profiles may not be found
     bool useBundledProfiles;   // only used if multiUser == true
-    Glib::ustring lastCopyMovePath;
     Glib::ustring loadSaveProfilePath;
     Glib::ustring lastSaveAsPath;
     int saveAsDialogWidth;
@@ -434,6 +433,7 @@ public:
     std::string clipped_shadows_color;
 
     struct RenameOptions {
+        Glib::ustring basedir;
         Glib::ustring pattern;
         Glib::ustring sidecars;
         int name_norm;
@@ -441,11 +441,14 @@ public:
         bool allow_whitespace;
         int on_existing;
         int progressive_number;
-        bool remember;
 
         RenameOptions();
+        bool load(Glib::KeyFile &kf);
+        bool save(Glib::KeyFile &kf);
     };
     RenameOptions renaming;
+    bool renaming_remember;
+    Glib::ustring last_renaming_loadsave_dir;
 
     int sidecar_autosave_interval; // in seconds
 

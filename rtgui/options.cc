@@ -73,6 +73,7 @@ Glib::ustring SaveFormat::getKey() const
 
 Options::RenameOptions::RenameOptions()
 {
+    basedir = ".";
     pattern = "%f.%e";
     sidecars = "";
     name_norm = 0;
@@ -80,7 +81,57 @@ Options::RenameOptions::RenameOptions()
     allow_whitespace = false;
     on_existing = 0;
     progressive_number = 1;
-    remember = true;
+}
+
+
+bool Options::RenameOptions::load(Glib::KeyFile &keyFile)
+{
+    if (keyFile.has_group("Renaming")) {
+        const char *g = "Renaming";
+        if (keyFile.has_key(g, "Basedir")) {
+            basedir = keyFile.get_string(g, "Basedir");
+        }
+        if (basedir.empty()) {
+            basedir = ".";
+        }
+        if (keyFile.has_key(g, "Pattern")) {
+            pattern = keyFile.get_string(g, "Pattern");
+        }
+        if (keyFile.has_key(g, "Sidecars")) {
+            sidecars = keyFile.get_string(g, "Sidecars");
+        }
+        if (keyFile.has_key(g, "NameNormalization")) {
+            name_norm = keyFile.get_integer(g, "NameNormalization");
+        }
+        if (keyFile.has_key(g, "ExtNormalization")) {
+            ext_norm = keyFile.get_integer(g, "ExtNormalization");
+        }
+        if (keyFile.has_key(g, "AllowWhitespace")) {
+            allow_whitespace = keyFile.get_boolean(g, "AllowWhitespace");
+        }
+        if (keyFile.has_key(g, "OnExisting")) {
+            on_existing = keyFile.get_integer(g, "OnExisting");
+        }
+        if (keyFile.has_key(g, "ProgressiveNumber")) {
+            progressive_number = keyFile.get_integer(g, "ProgressiveNumber");
+        }
+        return true;
+    }
+    return false;
+}
+
+
+bool Options::RenameOptions::save(Glib::KeyFile &keyFile)
+{
+    keyFile.set_string("Renaming", "Basedir", basedir);
+    keyFile.set_string("Renaming", "Pattern", pattern);
+    keyFile.set_string("Renaming", "Sidecars", sidecars);
+    keyFile.set_integer("Renaming", "NameNormalization", name_norm);
+    keyFile.set_integer("Renaming", "ExtNormalization", ext_norm);
+    keyFile.set_boolean("Renaming", "AllowWhitespace", allow_whitespace);
+    keyFile.set_integer("Renaming", "OnExisting", on_existing);
+    keyFile.set_integer("Renaming", "ProgressiveNumber", progressive_number);
+    return true;
 }
 
 
@@ -377,7 +428,6 @@ void Options::setDefaults()
     multiUser = true;
     profilePath = "profiles";
     loadSaveProfilePath = "";           // will be corrected in load as otherwise construction fails
-    lastCopyMovePath = "";
     version = "0.0.0.0";                // temporary value; will be correctly set in RTWindow::on_realize
     thumbSize = 160;
     thumbSizeTab = 160;
@@ -611,6 +661,9 @@ void Options::setDefaults()
     clipped_shadows_color = "";
 
     renaming = RenameOptions();
+    renaming_remember = true;
+    last_renaming_loadsave_dir = "";
+
     sidecar_autosave_interval = 0;
 
     editor_keyboard_scroll_step = 50;
@@ -1619,9 +1672,10 @@ void Options::readFromFile(Glib::ustring fname)
                 safeDirGet(keyFile, "Dialogs", "LastProfilingReferenceDir", lastProfilingReferenceDir);
                 safeDirGet(keyFile, "Dialogs", "LastLensProfileDir", lastLensProfileDir);
                 safeDirGet(keyFile, "Dialogs", "LastICCProfCreatorDir", lastICCProfCreatorDir);
-                safeDirGet(keyFile, "Dialogs", "LastCopyMovePath", lastCopyMovePath);
                 safeDirGet(keyFile, "Dialogs", "LastSessionAddDir", last_session_add_dir);
                 safeDirGet(keyFile, "Dialogs", "LastSessionLoadSaveDir", last_session_loadsave_dir);
+                safeDirGet(keyFile, "Dialogs", "LastCopyMovePath", renaming.basedir);
+                safeDirGet(keyFile, "Dialogs", "LastRenamingLoadSaveDir", last_renaming_loadsave_dir);
 
                 if (keyFile.has_key("Dialogs", "GimpPluginShowInfoDialog")) {
                     gimpPluginShowInfoDialog = keyFile.get_boolean("Dialogs", "GimpPluginShowInfoDialog");
@@ -1686,33 +1740,10 @@ void Options::readFromFile(Glib::ustring fname)
                 }
             }
 
-            if (keyFile.has_group("Renaming")) {
-                const char *g = "Renaming";
-                if (keyFile.has_key(g, "Pattern")) {
-                    renaming.pattern = keyFile.get_string(g, "Pattern");
-                }
-                if (keyFile.has_key(g, "Sidecars")) {
-                    renaming.sidecars = keyFile.get_string(g, "Sidecars");
-                }
-                if (keyFile.has_key(g, "NameNormalization")) {
-                    renaming.name_norm = keyFile.get_integer(g, "NameNormalization");
-                }
-                if (keyFile.has_key(g, "ExtNormalization")) {
-                    renaming.ext_norm = keyFile.get_integer(g, "ExtNormalization");
-                }
-                if (keyFile.has_key(g, "AllowWhitespace")) {
-                    renaming.allow_whitespace = keyFile.get_boolean(g, "AllowWhitespace");
-                }
-                if (keyFile.has_key(g, "OnExisting")) {
-                    renaming.on_existing = keyFile.get_integer(g, "OnExisting");
-                }
-                if (keyFile.has_key(g, "ProgressiveNumber")) {
-                    renaming.progressive_number = keyFile.get_integer(g, "ProgressiveNumber");
-                }
-                if (keyFile.has_key(g, "Remember")) {
-                    renaming.remember = keyFile.get_boolean(g, "Remember");
-                }
-            }
+            renaming.load(keyFile);
+            if (keyFile.has_group("Renaming") && keyFile.has_key("Renaming", "Remember")) {
+                renaming_remember = keyFile.get_boolean("Renaming", "Remember");
+        }
 
             if (keyFile.has_group("ExifFilterSettings")) {
                 const char *g = "ExifFilterSettings";
@@ -2097,9 +2128,9 @@ void Options::saveToFile(Glib::ustring fname)
         keyFile.set_string("Dialogs", "LastProfilingReferenceDir", lastProfilingReferenceDir);
         keyFile.set_string("Dialogs", "LastLensProfileDir", lastLensProfileDir);
         keyFile.set_string("Dialogs", "LastICCProfCreatorDir", lastICCProfCreatorDir);
-        keyFile.set_string("Dialogs", "LastCopyMovePath", lastCopyMovePath);
         keyFile.set_string("Dialogs", "LastSessionAddDir", last_session_add_dir);
         keyFile.set_string("Dialogs", "LastSessionLoadSaveDir", last_session_loadsave_dir);
+        keyFile.set_string("Dialogs", "LastRenamingLoadSaveDir", last_renaming_loadsave_dir);
         keyFile.set_boolean("Dialogs", "GimpPluginShowInfoDialog", gimpPluginShowInfoDialog);
 
         keyFile.set_string("Lensfun", "DBDirectory", rtSettings.lensfunDbDirectory);
@@ -2131,15 +2162,8 @@ void Options::saveToFile(Glib::ustring fname)
         }
         keyFile.set_string("False Colors Map", "ClippedHighlights", clipped_highlights_color);
         keyFile.set_string("False Colors Map", "ClippedShadows", clipped_shadows_color);
-
-        keyFile.set_string("Renaming", "Pattern", renaming.pattern);
-        keyFile.set_string("Renaming", "Sidecars", renaming.sidecars);
-        keyFile.set_integer("Renaming", "NameNormalization", renaming.name_norm);
-        keyFile.set_integer("Renaming", "ExtNormalization", renaming.ext_norm);
-        keyFile.set_boolean("Renaming", "AllowWhitespace", renaming.allow_whitespace);
-        keyFile.set_integer("Renaming", "OnExisting", renaming.on_existing);
-        keyFile.set_integer("Renaming", "ProgressiveNumber", renaming.progressive_number);
-        keyFile.set_integer("Renaming", "Remember", renaming.remember);
+        renaming.save(keyFile);
+        keyFile.set_integer("Renaming", "Remember", renaming_remember);
 
         keyFile.set_boolean("ExifFilterSettings", "Remember", remember_exif_filter_settings);
         last_exif_filter_settings.save(keyFile, "ExifFilterSettings");

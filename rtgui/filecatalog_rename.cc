@@ -603,7 +603,7 @@ Glib::ustring get_new_name(Params &params, FileBrowserEntry *entry)
 bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args, Params &out, bool move)
 {
     Gtk::Dialog dialog(M(move ? "FILEBROWSER_RENAMEDLGLABEL" : "FILEBROWSER_RENAME_DIALOG_COPY_LABEL"), parent);
-    Gtk::Label lbl(M("RENAME_DIALOG_PATTERN"));
+    Gtk::Label lbl(M("RENAME_DIALOG_PATTERN") + ":");
     MyFileChooserButton basedir(M("RENAME_DIALOG_BASEDIR"), Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
     Gtk::Entry pattern;
     Gtk::VBox vb;
@@ -613,7 +613,7 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     double s = RTScalable::getScale();
     int pad = 4 * s;
 
-    Gtk::Label lbld(M("RENAME_DIALOG_BASEDIR"));
+    Gtk::Label lbld(M("RENAME_DIALOG_BASEDIR") + ":");
     Gtk::HBox hbd;
     hbd.pack_start(lbld, Gtk::PACK_SHRINK, pad);
     hbd.pack_start(basedir, Gtk::PACK_EXPAND_WIDGET, pad);
@@ -621,6 +621,30 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     
     hb.pack_start(lbl, Gtk::PACK_SHRINK, pad);
     hb.pack_start(pattern, Gtk::PACK_EXPAND_WIDGET, pad);
+
+    Gtk::Button load;
+    load.add(*Gtk::manage(new RTImage("folder-open.svg")));
+    load.get_style_context()->add_class("Left");
+    load.set_margin_left(2);
+    setExpandAlignProperties(&load, false, true, Gtk::ALIGN_CENTER, Gtk::ALIGN_FILL);
+    load.set_tooltip_markup(M("FILEBROWSER_RENAME_DIALOG_LOAD_TIP"));
+    
+    Gtk::Button save;
+    save.add(*Gtk::manage(new RTImage("save.svg")));
+    save.get_style_context()->add_class("MiddleH");
+    setExpandAlignProperties(&save, false, true, Gtk::ALIGN_CENTER, Gtk::ALIGN_FILL);
+    save.set_tooltip_markup(M("FILEBROWSER_RENAME_DIALOG_SAVE_TIP"));
+
+    Gtk::Button reset;
+    reset.add(*Gtk::manage(new RTImage("undo-small.svg")));
+    reset.get_style_context()->add_class("Right");
+    setExpandAlignProperties(&save, false, true, Gtk::ALIGN_CENTER, Gtk::ALIGN_FILL);
+    reset.set_tooltip_markup(M("FILEBROWSER_RENAME_DIALOG_RESET_TIP"));
+    
+    hb.pack_start(load, Gtk::PACK_SHRINK);
+    hb.pack_start(save, Gtk::PACK_SHRINK);
+    hb.pack_start(reset, Gtk::PACK_SHRINK);
+    
     vb.pack_start(hb, Gtk::PACK_SHRINK, pad);
     pattern.set_tooltip_markup(M("RENAME_DIALOG_PATTERN_TIP"));
 
@@ -632,7 +656,7 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     mainvb.pack_start(hb2, Gtk::PACK_SHRINK, pad);
 
     Gtk::HBox hb3;
-    Gtk::Label lbl2(M("RENAME_DIALOG_NAME_NORMALIZATION"));
+    Gtk::Label lbl2(M("RENAME_DIALOG_NAME_NORMALIZATION") + ":");
     hb3.pack_start(lbl2, Gtk::PACK_SHRINK, pad);
     Gtk::ComboBoxText name_norm;
     name_norm.append(M("RENAME_DIALOG_NORM_OFF"));
@@ -642,7 +666,7 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     mainvb.pack_start(hb3, Gtk::PACK_SHRINK, pad);
 
     Gtk::Box hb4;
-    Gtk::Label lbl3(M("RENAME_DIALOG_EXT_NORMALIZATION"));
+    Gtk::Label lbl3(M("RENAME_DIALOG_EXT_NORMALIZATION") + ":");
     hb4.pack_start(lbl3, Gtk::PACK_SHRINK, pad);
     Gtk::ComboBoxText ext_norm;
     ext_norm.append(M("RENAME_DIALOG_NORM_OFF"));
@@ -652,7 +676,7 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     mainvb.pack_start(hb4, Gtk::PACK_SHRINK, pad);
     
     Gtk::HBox hb6;
-    Gtk::Label lbl5(M("RENAME_DIALOG_ON_EXISTING"));
+    Gtk::Label lbl5(M("RENAME_DIALOG_ON_EXISTING") + ":");
     hb6.pack_start(lbl5, Gtk::PACK_SHRINK, pad);
     Gtk::ComboBoxText on_existing;
     on_existing.append(M("RENAME_DIALOG_SKIP"));
@@ -661,7 +685,7 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     mainvb.pack_start(hb6, Gtk::PACK_SHRINK, pad);
 
     Gtk::HBox hb7;
-    Gtk::Label lbl6(M("RENAME_DIALOG_PROGRESSIVE"));
+    Gtk::Label lbl6(M("RENAME_DIALOG_PROGRESSIVE") + ":");
     hb7.pack_start(lbl6, Gtk::PACK_SHRINK, pad);
     Gtk::SpinButton progressive_number;
     progressive_number.set_range(1, 1000000);
@@ -671,7 +695,7 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     mainvb.pack_start(hb7, Gtk::PACK_SHRINK, pad);
 
     Gtk::HBox hb5;
-    Gtk::Label lbl4(M("RENAME_DIALOG_SIDECARS"));
+    Gtk::Label lbl4(M("RENAME_DIALOG_SIDECARS") + ":");
     hb5.pack_start(lbl4, Gtk::PACK_SHRINK, pad);
     Gtk::Entry sidecars;
     sidecars.set_tooltip_markup(M("RENAME_DIALOG_SIDECARS_TIP"));
@@ -710,6 +734,33 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     dialog.set_size_request(600, -1);
     dialog.show_all_children();
 
+    const auto set_values =
+        [&](const Options::RenameOptions &r) -> void
+        {
+            basedir.set_filename(r.basedir);
+            pattern.set_text(r.pattern);
+            sidecars.set_text(r.sidecars);
+            name_norm.set_active(r.name_norm);
+            ext_norm.set_active(r.ext_norm);
+            on_existing.set_active(r.on_existing);
+            allow_whitespace.set_active(r.allow_whitespace);
+            progressive_number.set_value(r.progressive_number);
+        };
+
+    const auto get_values =
+        [&]() -> Options::RenameOptions
+        {
+            Options::RenameOptions r;
+            r.pattern = pattern.get_text();
+            r.sidecars = sidecars.get_text();
+            r.name_norm = name_norm.get_active_row_number();
+            r.ext_norm = ext_norm.get_active_row_number();
+            r.allow_whitespace = allow_whitespace.get_active();
+            r.on_existing = on_existing.get_active_row_number();
+            r.progressive_number = progressive_number.get_value_as_int();
+            r.basedir = out.basedir;
+            return r;
+        };
 
     const auto getparams =
         [&]() -> bool
@@ -741,15 +792,8 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
             out.on_existing = Params::OnExistingAction(on_existing.get_active_row_number());
             out.progressive_number = progressive_number.get_value_as_int();
 
-            if (options.renaming.remember) {
-                options.renaming.pattern = patternstr;
-                options.renaming.sidecars = sidecars.get_text();
-                options.renaming.name_norm = name_norm.get_active_row_number();
-                options.renaming.ext_norm = ext_norm.get_active_row_number();
-                options.renaming.allow_whitespace = allow_whitespace.get_active();
-                options.renaming.on_existing = on_existing.get_active_row_number();
-                options.renaming.progressive_number = progressive_number.get_value_as_int();
-                options.lastCopyMovePath = out.basedir;
+            if (options.renaming_remember) {
+                options.renaming = get_values();
             }
 
             return true;
@@ -788,28 +832,114 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
             on_pattern_change();
         };
 
-    if (!Glib::file_test(options.lastCopyMovePath, Glib::FILE_TEST_IS_DIR)) {
-        options.lastCopyMovePath = ".";
+    const auto on_load =
+        [&]() -> void
+        {
+            Gtk::FileChooserDialog dlg(dialog, M("GENERAL_LOAD"), Gtk::FILE_CHOOSER_ACTION_OPEN);
+            bindCurrentFolder(dlg, options.last_renaming_loadsave_dir);
+
+            dlg.add_button(M("GENERAL_CANCEL"), Gtk::RESPONSE_CANCEL);
+            dlg.add_button(M("GENERAL_LOAD"), Gtk::RESPONSE_APPLY);
+
+            Glib::RefPtr<Gtk::FileFilter> filter_pp = Gtk::FileFilter::create();
+            filter_pp->set_name(M("FILECHOOSER_FILTER_INI"));
+            filter_pp->add_pattern("*.ini");
+            dlg.add_filter(filter_pp);
+
+            Glib::RefPtr<Gtk::FileFilter> filter_any = Gtk::FileFilter::create();
+            filter_any->set_name(M("FILECHOOSER_FILTER_ANY"));
+            filter_any->add_pattern("*");
+            dlg.add_filter(filter_any);
+
+            int result = dlg.run();
+
+            if (result == Gtk::RESPONSE_APPLY) {
+                auto fname = dlg.get_filename();
+                
+                if (Glib::file_test(fname, Glib::FILE_TEST_EXISTS)) {
+                    try {
+                        Glib::KeyFile keyFile;
+                        Options::RenameOptions r;
+                        if (keyFile.load_from_file(fname) && r.load(keyFile)) {
+                            set_values(r);
+                        } else if (options.rtSettings.verbose) {
+                            std::cout << "error loading rename settings from " << fname << std::endl;
+                        }
+                    } catch (std::exception &exc) {
+                        if (options.rtSettings.verbose) {
+                            std::cout << "error loading rename settings from " << fname << ": " << exc.what() << std::endl;
+                        }
+                    }
+                }
+            }
+        };
+
+    const auto on_save =
+        [&]() -> void
+        {
+            Gtk::FileChooserDialog dlg(dialog, M("GENERAL_SAVE"), Gtk::FILE_CHOOSER_ACTION_SAVE);
+            bindCurrentFolder(dlg, options.last_renaming_loadsave_dir);
+
+            dlg.add_button(M("GENERAL_CANCEL"), Gtk::RESPONSE_CANCEL);
+            dlg.add_button(M("GENERAL_SAVE"), Gtk::RESPONSE_APPLY);
+
+            Glib::RefPtr<Gtk::FileFilter> filter_pp = Gtk::FileFilter::create();
+            filter_pp->set_name(M("FILECHOOSER_FILTER_INI"));
+            filter_pp->add_pattern("*.ini");
+            dlg.add_filter(filter_pp);
+
+            Glib::RefPtr<Gtk::FileFilter> filter_any = Gtk::FileFilter::create();
+            filter_any->set_name(M("FILECHOOSER_FILTER_ANY"));
+            filter_any->add_pattern("*");
+            dlg.add_filter(filter_any);
+
+            do {
+                if (dlg.run() == Gtk::RESPONSE_APPLY) {
+                    Glib::ustring fname = dlg.get_filename();
+
+                    if (confirmOverwrite(dlg, fname)) {
+                        Glib::KeyFile keyFile;
+                        bool err = false;
+                        try {
+                            if (get_values().save(keyFile)) {
+                                auto data = keyFile.to_data();
+                                FILE *f = g_fopen(fname.c_str(), "wt");
+                                if (!f) {
+                                    err = true;
+                                } else {
+                                    fprintf(f, "%s", data.c_str());
+                                    fclose(f);
+                                }
+                            } else {
+                                err = true;
+                            }
+                        } catch (std::exception &exc) {
+                            err = true;
+                        }
+                        if (err && options.rtSettings.verbose) {
+                            std::cout << "error saving rename settings to " << fname << std::endl;
+                        }
+                        return;
+                    }
+                } else {
+                    return;
+                }
+            } while (true);
+        };
+
+    const auto on_reset =
+        [&]() -> void
+        {
+            set_values(Options::RenameOptions());
+        };
+
+    if (!Glib::file_test(options.renaming.basedir, Glib::FILE_TEST_IS_DIR)) {
+        options.renaming.basedir = ".";
     }
-    if (options.renaming.remember) {
-        basedir.set_filename(options.lastCopyMovePath);
-        pattern.set_text(options.renaming.pattern);
-        sidecars.set_text(options.renaming.sidecars);
-        name_norm.set_active(options.renaming.name_norm);
-        ext_norm.set_active(options.renaming.ext_norm);
-        on_existing.set_active(options.renaming.on_existing);
-        allow_whitespace.set_active(options.renaming.allow_whitespace);
-        progressive_number.set_value(options.renaming.progressive_number);
+    if (options.renaming_remember) {
+        set_values(options.renaming);
     } else {
-        auto r = Options::RenameOptions();
-        basedir.set_filename(".");
-        pattern.set_text(r.pattern);
-        sidecars.set_text(r.sidecars);
-        name_norm.set_active(r.name_norm);
-        ext_norm.set_active(r.ext_norm);
-        on_existing.set_active(r.on_existing);
-        allow_whitespace.set_active(r.allow_whitespace);
-        progressive_number.set_value(r.progressive_number);
+        set_values(Options::RenameOptions());
     }
 
     pattern.signal_changed().connect(sigc::slot<void>(on_pattern_change));
@@ -820,6 +950,10 @@ bool get_params(Gtk::Window &parent, const std::vector<FileBrowserEntry *> &args
     progressive_number.signal_value_changed().connect(sigc::slot<void>(on_pattern_change));
     filelist.signal_row_activated().connect(sigc::slot<void, const Gtk::TreeModel::Path &, Gtk::TreeViewColumn *>(on_file_select));
     basedir.signal_file_set().connect(sigc::slot<void>(on_pattern_change));
+
+    load.signal_clicked().connect(sigc::slot<void>(on_load));
+    save.signal_clicked().connect(sigc::slot<void>(on_save));
+    reset.signal_clicked().connect(sigc::slot<void>(on_reset));
 
     on_pattern_change();
 

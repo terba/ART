@@ -137,7 +137,7 @@ int init (const Settings* s, Glib::ustring baseDir, Glib::ustring userSettingsDi
     ExternalLUT3D::init();
 #endif
     ExternalMaskManager::init();
-    
+
     delete lcmsMutex;
     lcmsMutex = new MyMutex;
     fftwMutex = new MyMutex;
