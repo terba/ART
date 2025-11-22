@@ -757,7 +757,9 @@ void FileCatalog::closeDir ()
             dirEFS = options.last_exif_filter_settings = filterPanel->getFilter(false);
         }
     }
-    hasValidCurrentEFS = false;
+    if (hasValidCurrentEFS && !currentEFS.enabled) {
+        hasValidCurrentEFS = false;
+    }
     redrawAll ();
 }
 
@@ -1158,7 +1160,9 @@ void FileCatalog::previewReady (int dir_id, FileBrowserEntry* fdn)
                     if (filter_panel_update_) {
                         filter_panel_update_ = false;
                         filterPanel->setFilter(dirEFS, false);
-                        if (options.remember_exif_filter_settings) {
+                        if (hasValidCurrentEFS) {
+                            filterPanel->setFilter(currentEFS, true);
+                        } else if (options.remember_exif_filter_settings) {
                             filterPanel->setFilter(options.last_exif_filter_settings, true);
                         }
                     }
@@ -1968,7 +1972,6 @@ void FileCatalog::refreshEditedState (const std::set<Glib::ustring>& efiles)
 // Called within GTK UI thread
 void FileCatalog::exifFilterChanged ()
 {
-
     currentEFS = filterPanel->getFilter ();
     hasValidCurrentEFS = true;
     fileBrowser->applyFilter (getFilter ());
