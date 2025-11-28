@@ -52,10 +52,7 @@ public:
 /*
  * Class handling actions common to all thumbnails of the file browser
  */
-class FileBrowser  : public ThumbBrowserBase,
-    public LWButtonListener,
-    public ProfileStoreListener
-{
+class FileBrowser: public ThumbBrowserBase,  public LWButtonListener, public ProfileStoreListener {
 private:
     typedef sigc::signal<void> type_trash_changed;
 
@@ -120,6 +117,7 @@ protected:
     BrowserFilter filter;
     int numFiltered;
     Glib::ustring last_selected_fname_;
+    std::unique_ptr<PartialPasteDlg> partial_paste_dlg_;
 
     void toTrashRequested   (std::vector<FileBrowserEntry*> tbe);
     void fromTrashRequested (std::vector<FileBrowserEntry*> tbe);
