@@ -88,10 +88,6 @@ std::vector<ToggleInfo> get_toggles(ParamsEdited &pedited)
         {"PARTIALPASTE_PERSPECTIVE", &pedited.perspective, 5, nullptr},
         {"PARTIALPASTE_COMMONTRANSFORMPARAMS", &pedited.commonTrans, 5, nullptr},
         
-        // {"PARTIALPASTE_COLORCORRECTION", &pedited.colorcorrection, 6},
-        // {"PARTIALPASTE_SMOOTHING", &pedited.smoothing, 6},
-        // {"PARTIALPASTE_LOCALCONTRAST", &pedited.localContrast, 6},
-        // {"PARTIALPASTE_TEXTUREBOOST", &pedited.textureBoost, 6},
         {"PARTIALPASTE_COLORCORRECTION", nullptr, 6, &pedited.colorcorrection},
         {"PARTIALPASTE_SMOOTHING", nullptr, 6, &pedited.smoothing},
         {"PARTIALPASTE_LOCALCONTRAST", nullptr, 6, &pedited.localContrast},
@@ -215,8 +211,6 @@ PartialPasteDlg::PartialPasteDlg(const Glib::ustring &title, Gtk::Window *parent
 
 void PartialPasteDlg::toggled(Gtk::CheckButton *which)
 {
-    //which->set_inconsistent(false);
-    
     if (which == everything_) {
         which->set_inconsistent(false);
         for (auto &p : buttons_) {

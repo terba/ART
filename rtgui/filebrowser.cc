@@ -1097,34 +1097,25 @@ void FileBrowser::partPasteProfile ()
             return;
         }
 
-        auto toplevel = static_cast<Gtk::Window*> (get_toplevel ());
-        PartialPasteDlg partialPasteDlg(M("PARTIALPASTE_DIALOGLABEL"), toplevel);
-        partialPasteDlg.set_allow_3way(true);
-
-        int i = partialPasteDlg.run ();
+        if (!partial_paste_dlg_) {
+            auto toplevel = static_cast<Gtk::Window*>(get_toplevel());
+            partial_paste_dlg_.reset(new PartialPasteDlg(M("PARTIALPASTE_DIALOGLABEL"), toplevel));
+        }
+        partial_paste_dlg_->set_allow_3way(true);
+        int i = partial_paste_dlg_->run();
 
         if (i == Gtk::RESPONSE_OK) {
             for (unsigned int i = 0; i < mselected.size(); i++) {
-                // copying read only clipboard PartialProfile to a temporary one, initialized to the thumb's ProcParams
-                mselected[i]->thumbnail->createProcParamsForUpdate(false, false); // this can execute customprofilebuilder to generate param file
+                mselected[i]->thumbnail->createProcParamsForUpdate(false, false);
                 const auto &pp = clipboard.getProcParams();
-                auto ped = partialPasteDlg.getParamsEdited();
-                // const rtengine::procparams::PartialProfile& cbPartProf = clipboard.getPartialProfile();
-                // rtengine::procparams::PartialProfile pastedPartProf(&mselected[i]->thumbnail->getProcParams (), nullptr);
-
-                // pushing the selected values of the clipboard PartialProfile to the temporary PartialProfile
-                //partialPasteDlg.applyPaste (pastedPartProf.pparams, pastedPartProf.pedited, cbPartProf.pparams, cbPartProf.pedited);
-
-                // applying the temporary PartialProfile to the thumb's ProcParams
-                // mselected[i]->thumbnail->setProcParams(*pastedPartProf.pparams, pastedPartProf.pedited, FILEBROWSER);
+                auto ped = partial_paste_dlg_->getParamsEdited();
                 mselected[i]->thumbnail->setProcParams(rtengine::procparams::PEditedPartialProfile(pp, ped), FILEBROWSER);
-                // pastedPartProf.deleteInstance();
             }
 
             queue_draw ();
         }
 
-        partialPasteDlg.hide ();
+        partial_paste_dlg_->hide();
     }
 }
 
@@ -1329,32 +1320,27 @@ void FileBrowser::applyPartialMenuItemActivated (ProfileStoreLabel *label)
     const rtengine::procparams::PartialProfile* srcProfiles = ProfileStore::getInstance()->getProfile (label->entry);
 
     if (srcProfiles) {
+        if (!partial_paste_dlg_) {
+            auto toplevel = static_cast<Gtk::Window*> (get_toplevel ());
+            partial_paste_dlg_.reset(new PartialPasteDlg(M("PARTIALPASTE_DIALOGLABEL"), toplevel));
+        }
+        partial_paste_dlg_->set_allow_3way(true);
 
-        auto toplevel = static_cast<Gtk::Window*> (get_toplevel ());
-        PartialPasteDlg partialPasteDlg(M("PARTIALPASTE_DIALOGLABEL"), toplevel);
-        partialPasteDlg.set_allow_3way(true);
-
-        if (partialPasteDlg.run() == Gtk::RESPONSE_OK) {
+        if (partial_paste_dlg_->run() == Gtk::RESPONSE_OK) {
             MYREADERLOCK(l, entryRW);
 
             for (size_t i = 0; i < selected.size(); i++) {
-                selected[i]->thumbnail->createProcParamsForUpdate(false, false);  // this can execute customprofilebuilder to generate param file
-
+                selected[i]->thumbnail->createProcParamsForUpdate(false, false);
                 rtengine::procparams::ProcParams pp;
                 srcProfiles->applyTo(pp);
-                // rtengine::procparams::PartialProfile dstProfile(true);
-                // *dstProfile.pparams = (static_cast<FileBrowserEntry*>(selected[i]))->thumbnail->getProcParams ();
-                // dstProfile.set(true);
-                // partialPasteDlg.applyPaste (dstProfile.pparams, dstProfile.pedited, srcProfiles->pparams, srcProfiles->pedited);
-                auto pe = partialPasteDlg.getParamsEdited();
+                auto pe = partial_paste_dlg_->getParamsEdited();
                 (static_cast<FileBrowserEntry*>(selected[i]))->thumbnail->setProcParams(rtengine::procparams::PEditedPartialProfile(pp, pe), FILEBROWSER);
-                // dstProfile.deleteInstance();
             }
 
             queue_draw ();
         }
 
-        partialPasteDlg.hide ();
+        partial_paste_dlg_->hide();
     }
 }
 
