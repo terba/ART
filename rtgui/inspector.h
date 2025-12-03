@@ -23,6 +23,7 @@
 #include "guiutils.h"
 #include "../rtengine/coord.h"
 #include "histogrampanel.h"
+#include "../rtengine/cache.h"
 
 class InspectorBuffer;
 class FileCatalog;
@@ -61,7 +62,7 @@ public:
      */
     bool isActive() const
     {
-        return active;
+        return active_;
     }
 
     void setInfoText(const Glib::ustring &txt);
@@ -83,6 +84,8 @@ public:
 
     void setHighlight(bool yes) { highlight_ = yes; }
 
+    void preloadImage(const Glib::ustring &fullPath);
+    
 private:
     bool on_draw(const ::Cairo::RefPtr< Cairo::Context> &cr) override;
     bool onMouseMove(GdkEventMotion *evt);
@@ -92,18 +95,20 @@ private:
     void deleteBuffers();
     bool doSwitchImage(bool recenter, rtengine::Coord2D newcenter);
     void updateHistogram();
+    std::shared_ptr<InspectorBuffer> doCacheImage(const Glib::ustring &fullPath);
 
     rtengine::Coord center;
-    std::vector<InspectorBuffer*> images;
-    InspectorBuffer* currImage;
+    rtengine::Cache<Glib::ustring, std::shared_ptr<InspectorBuffer>> cache_;//std::vector<InspectorBuffer*> images;
+    //InspectorBuffer* currImage;
+    std::shared_ptr<InspectorBuffer> cur_image_;
     //double zoom;
-    bool active;
+    bool active_;
     bool first_active_;
     bool highlight_;
     bool has_focus_mask_;
 
-    sigc::connection delayconn;
-    Glib::ustring next_image_path;
+    sigc::connection delayconn_;
+    Glib::ustring next_image_path_;
 
     Glib::ustring info_text_;
     BackBuffer info_bb_;
@@ -167,6 +172,7 @@ private:
 
     Gtk::HBox ibox_;
     std::array<Glib::ustring, 2> cur_image_;
+    std::array<size_t, 2> cur_image_idx_;
     std::array<InspectorArea, 2> ins_;
     std::array<Gtk::Allocation, 2> ins_sz_;
     size_t active_;
@@ -199,4 +205,6 @@ private:
     sigc::connection delayconn_;
 
     bool temp_zoom_11_;
+
+    IdleRegister idle_register_;
 };

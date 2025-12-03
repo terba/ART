@@ -29,33 +29,29 @@
 
 #include "../rtgui/threadutils.h"
 
-namespace rtengine
+namespace rtengine {
+
+namespace cache_helper {
+
+// See http://stackoverflow.com/a/20790050
+template<typename, typename = void>
+struct has_hash
+    : std::false_type
 {
+};
 
-namespace cache_helper
+template<typename T>
+struct has_hash<T, decltype(std::hash<T>()(std::declval<T>()), void())>
+    : std::true_type
 {
+};
 
-    // See http://stackoverflow.com/a/20790050
-    template<typename, typename = void>
-    struct has_hash
-        : std::false_type
-    {
-    };
-
-    template<typename T>
-    struct has_hash<T, decltype(std::hash<T>()(std::declval<T>()), void())>
-        : std::true_type
-    {
-    };
-
-}
+} // namespace cache_helper
 
 template<class K, class V>
-class Cache
-{
+class Cache {
 public:
-    class Hook
-    {
+    class Hook {
     public:
         virtual ~Hook()
         {
@@ -237,4 +233,5 @@ private:
     mutable LruList lru_list;
 };
 
-}
+} // namespace rtengine
+

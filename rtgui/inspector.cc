@@ -82,8 +82,9 @@ InspectorBuffer::InspectorBuffer(const Glib::ustring &imagePath, int width, int 
 //-----------------------------------------------------------------------------
 
 InspectorArea::InspectorArea():
-    currImage(nullptr),
-    active(false),
+    cache_(std::max(options.maxInspectorBuffers, 1)),
+    cur_image_(nullptr),
+    active_(false),
     first_active_(true),
     highlight_(false),
     has_focus_mask_(false),
@@ -127,15 +128,15 @@ bool InspectorArea::on_draw(const ::Cairo::RefPtr< Cairo::Context> &cr)
         return false;
     }
 
-    if (!active) {
+    if (!active_) {
         sig_active_.emit();
-        active = true;
+        active_ = true;
     }
 
     // cleanup the region
 
 
-    if (currImage && currImage->imgBuffer.surfaceCreated()) {
+    if (cur_image_ && cur_image_->imgBuffer.surfaceCreated()) {
         // this will eventually create/update the off-screen pixmap
 
         // compute the displayed area
@@ -145,8 +146,8 @@ bool InspectorArea::on_draw(const ::Cairo::RefPtr< Cairo::Context> &cr)
         rtengine::Coord dest(0, 0);
         availableSize.x = win->get_width();
         availableSize.y = win->get_height();
-        int imW = currImage->imgBuffer.getWidth();
-        int imH = currImage->imgBuffer.getHeight();
+        int imW = cur_image_->imgBuffer.getWidth();
+        int imH = cur_image_->imgBuffer.getHeight();
 
         if (imW < availableSize.x) {
             // center the image in the available space along X
@@ -181,10 +182,10 @@ bool InspectorArea::on_draw(const ::Cairo::RefPtr< Cairo::Context> &cr)
         // define the destination area
         auto dw = rtengine::min<int>(availableSize.x - dest.x, imW);
         auto dh = rtengine::min<int>(availableSize.y - dest.y, imH);
-        currImage->imgBuffer.setDrawRectangle(win, dest.x, dest.y, dw, dh, false);
-        currImage->imgBuffer.setSrcOffset(topLeft.x, topLeft.y);
+        cur_image_->imgBuffer.setDrawRectangle(win, dest.x, dest.y, dw, dh, false);
+        cur_image_->imgBuffer.setSrcOffset(topLeft.x, topLeft.y);
 
-        if (!currImage->imgBuffer.surfaceCreated()) {
+        if (!cur_image_->imgBuffer.surfaceCreated()) {
             return false;
         }
 
@@ -198,13 +199,13 @@ bool InspectorArea::on_draw(const ::Cairo::RefPtr< Cairo::Context> &cr)
             int sw = std::min(win->get_width(), imW);
             int sh = std::min(win->get_height(), imH);
             BackBuffer surf(sw, sh);//win->get_width(), win->get_height());
-            currImage->imgBuffer.setDestPosition(0, 0);
-            currImage->imgBuffer.copySurface(&surf);
+            cur_image_->imgBuffer.setDestPosition(0, 0);
+            cur_image_->imgBuffer.copySurface(&surf);
             show_focus_mask(surf.getSurface());
             surf.setDestPosition(dest.x, dest.y);
             surf.copySurface(win);
         } else {
-            currImage->imgBuffer.copySurface(win);
+            cur_image_->imgBuffer.copySurface(win);
         }
 
         // draw the frame
@@ -254,12 +255,12 @@ bool InspectorArea::on_draw(const ::Cairo::RefPtr< Cairo::Context> &cr)
 
 void InspectorArea::mouseMove(rtengine::Coord2D pos, int transform)
 {
-    if (!active) {
+    if (!active_) {
         return;
     }
 
-    if (currImage) {
-        center.set(int(rtengine::LIM01(pos.x)*double(currImage->imgBuffer.getWidth())), int(rtengine::LIM01(pos.y)*double(currImage->imgBuffer.getHeight())));
+    if (cur_image_) {
+        center.set(int(rtengine::LIM01(pos.x)*double(cur_image_->imgBuffer.getWidth())), int(rtengine::LIM01(pos.y)*double(cur_image_->imgBuffer.getHeight())));
     } else {
         center.set(0, 0);
     }
@@ -270,96 +271,42 @@ void InspectorArea::mouseMove(rtengine::Coord2D pos, int transform)
 
 void InspectorArea::switchImage(const Glib::ustring &fullPath, bool recenter, rtengine::Coord2D newcenter)
 {
-    if (!active) {
+    if (!active_) {
         return;
     }
 
-    if (delayconn.connected()) {
-        delayconn.disconnect();
+    if (delayconn_.connected()) {
+        delayconn_.disconnect();
     }
 
-    next_image_path = fullPath;
+    next_image_path_ = fullPath;
     if (!options.inspectorDelay) {
         doSwitchImage(recenter, newcenter);
     } else {
-        delayconn = Glib::signal_timeout().connect(sigc::bind(sigc::mem_fun(*this, &InspectorArea::doSwitchImage), recenter, newcenter), options.inspectorDelay);
+        delayconn_ = Glib::signal_timeout().connect(sigc::bind(sigc::mem_fun(*this, &InspectorArea::doSwitchImage), recenter, newcenter), options.inspectorDelay);
     }
 }
 
 
 bool InspectorArea::doSwitchImage(bool recenter, rtengine::Coord2D newcenter)
 {
-    Glib::ustring fullPath = next_image_path;
+    Glib::ustring fullPath = next_image_path_;
     
-    // we first check the size of the list, it may have been changed in Preference
-    if (images.size() > size_t(options.maxInspectorBuffers)) {
-        // deleting the last entries
-        for (size_t i = images.size() - 1; i > size_t(options.maxInspectorBuffers - 1); --i) {
-            delete images.at(i);
-            images.at(i) = nullptr;
-        }
-
-        // resizing down
-        images.resize(options.maxInspectorBuffers);
-    }
-
     if (fullPath.empty()) {
-        currImage = nullptr;
+        cur_image_.reset();
     } else {
-        bool found = false;
-
-        for (size_t i = 0; i < images.size(); ++i) {
-            if (images.at(i) != nullptr && images.at(i)->imgPath == fullPath) {
-                currImage = images.at(i);
-
-                // rolling the list 1 step to the beginning
-                for (size_t j = i; j < images.size() - 1; ++j) {
-                    images.at(j) = images.at(j + 1);
-                }
-
-                images.at(images.size() - 1) = currImage; // move the last used image to the tail
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            if (images.size() == size_t(options.maxInspectorBuffers)) {
-                // The list is full, delete the first entry
-                delete images.at(0);
-                images.erase(images.begin());
-            }
-
-            Glib::RefPtr<Gdk::Window> win = get_window();
-            int width = -1, height = -1;
-            if (win && options.thumbnail_inspector_zoom_fit) {
-                width = win->get_width();
-                height = win->get_height();
-            }
-            
-            // Loading a new image
-            InspectorBuffer *iBuffer = new InspectorBuffer(fullPath, width, height);
-
-            // and add it to the tail
-            if (!iBuffer->imgPath.empty()) {
-                images.push_back(iBuffer);
-                currImage = images.at(images.size() - 1);
-            } else {
-                delete iBuffer;
-                currImage = nullptr;
-            }
-        }
+        cur_image_ = doCacheImage(fullPath);
     }
 
-    if (currImage && recenter) {
+    if (cur_image_ && recenter) {
         if (newcenter.x >= 0 && newcenter.y >= 0) {
-            center.set(rtengine::LIM01(newcenter.x) * currImage->imgBuffer.getWidth(), rtengine::LIM01(newcenter.y) * currImage->imgBuffer.getHeight());
+            center.set(rtengine::LIM01(newcenter.x) * cur_image_->imgBuffer.getWidth(), rtengine::LIM01(newcenter.y) * cur_image_->imgBuffer.getHeight());
         } else {
-            center.set(currImage->imgBuffer.getWidth()/2, currImage->imgBuffer.getHeight()/2);
+            center.set(cur_image_->imgBuffer.getWidth()/2, cur_image_->imgBuffer.getHeight()/2);
         }
     }
 
-    if (currImage && options.thumbnail_inspector_show_histogram) {
+    if (cur_image_ && options.thumbnail_inspector_show_histogram) {
         updateHistogram();
     }
 
@@ -368,22 +315,47 @@ bool InspectorArea::doSwitchImage(bool recenter, rtengine::Coord2D newcenter)
     return true;
 }
 
-void InspectorArea::deleteBuffers ()
+
+std::shared_ptr<InspectorBuffer> InspectorArea::doCacheImage(const Glib::ustring &fullPath)
 {
-    for (size_t i = 0; i < images.size(); ++i) {
-        if (images.at(i) != nullptr) {
-            delete images.at(i);
-            images.at(i) = nullptr;
+    std::shared_ptr<InspectorBuffer> res;
+    if (!cache_.get(fullPath, res)) {
+        Glib::RefPtr<Gdk::Window> win = get_window();
+        int width = -1, height = -1;
+        if (win && options.thumbnail_inspector_zoom_fit) {
+            width = win->get_width();
+            height = win->get_height();
+        }
+            
+        // Loading a new image
+        res = std::make_shared<InspectorBuffer>(fullPath, width, height);
+
+        // and add it to the tail
+        if (res->imgPath.empty()) {
+            res.reset();
+        } else {
+            cache_.set(fullPath, res);
         }
     }
+    return res;
+}
 
-    images.resize(0);
-    currImage = nullptr;
+
+void InspectorArea::preloadImage(const Glib::ustring &fullPath)
+{
+    doCacheImage(fullPath);
+}
+
+
+void InspectorArea::deleteBuffers ()
+{
+    cache_.clear();
+    cur_image_.reset();
 }
 
 void InspectorArea::flushBuffers ()
 {
-    if (!active) {
+    if (!active_) {
         return;
     }
 
@@ -396,8 +368,8 @@ void InspectorArea::setActive(bool state)
         flushBuffers();
     }
 
-    active = state;
-    if (!active) {
+    active_ = state;
+    if (!active_) {
         first_active_ = true;
     }
 }
@@ -498,7 +470,7 @@ void InspectorArea::setFocusMask(bool yes)
 void InspectorArea::updateHistogram()
 {
     Glib::RefPtr<Gdk::Window> win = get_window();
-    if (!win || !currImage) {
+    if (!win || !cur_image_) {
         return;
     }
     
@@ -506,9 +478,9 @@ void InspectorArea::updateHistogram()
     array2D<int> dummy_arr;
     hist_bb_.update(dummy_lut, dummy_lut, dummy_lut,
                     dummy_lut, dummy_lut,
-                    currImage->histogram[0],
-                    currImage->histogram[1],
-                    currImage->histogram[2],
+                    cur_image_->histogram[0],
+                    cur_image_->histogram[1],
+                    cur_image_->histogram[2],
                     1,
                     dummy_arr, dummy_arr,
                     1,
@@ -523,9 +495,9 @@ void InspectorArea::updateHistogram()
 
 bool InspectorArea::onMouseMove(GdkEventMotion *evt)
 {
-    if (active && currImage && prev_point_.x >= 0) {
-        double w = currImage->imgBuffer.getWidth();
-        double h = currImage->imgBuffer.getHeight();
+    if (active_ && cur_image_ && prev_point_.x >= 0) {
+        double w = cur_image_->imgBuffer.getWidth();
+        double h = cur_image_->imgBuffer.getHeight();
         if (w > 0 && h > 0) {
             constexpr double gain = 4.0;
             double dx = center.x - (evt->x - prev_point_.x) * gain;
@@ -539,12 +511,12 @@ bool InspectorArea::onMouseMove(GdkEventMotion *evt)
 
 bool InspectorArea::onMousePress(GdkEventButton *evt)
 {
-    if (active && evt->button == 1) {
+    if (active_ && evt->button == 1) {
         prev_point_.set(evt->x, evt->y);
         CursorManager::setWidgetCursor(get_window(), CSHandClosed);
-        if (currImage) {
-            double w = currImage->imgBuffer.getWidth();
-            double h = currImage->imgBuffer.getHeight();
+        if (cur_image_) {
+            double w = cur_image_->imgBuffer.getWidth();
+            double h = cur_image_->imgBuffer.getHeight();
             auto win = get_window();
             if (w > 0 && h > 0) {
                 int ww = win->get_width();
@@ -589,6 +561,9 @@ Inspector::Inspector(FileCatalog *filecatalog):
     show_all_children();
 
     signal_key_press_event().connect(sigc::mem_fun(*this, &Inspector::keyPressed));
+
+    cur_image_idx_[0] = 0;
+    cur_image_idx_[1] = 0;
 
     active_ = 0;
     num_active_ = 1;
@@ -695,6 +670,56 @@ void Inspector::switchImage(const Glib::ustring &fullPath)
     auto &root = getToplevelWindow(this);
     if (RTWindow *w = dynamic_cast<RTWindow *>(&root)) {
         w->set_title_decorated(fullPath);
+    }
+    auto &entries = filecatalog_->fileBrowser->getEntries();
+    size_t j = entries.size();
+    size_t ilo = cur_image_idx_[active_];
+    size_t ihi = cur_image_idx_[active_];
+    while (ilo > 0 || ihi < entries.size()) {
+        if (!entries[ilo]->filtered && entries[ilo]->filename == fullPath) {
+            j = ilo;
+            break;
+        } else if (!entries[ihi]->filtered && entries[ihi]->filename == fullPath) {
+            j = ihi;
+            break;
+        }
+        if (ilo > 0) {
+            --ilo;
+        }
+        if (ihi < entries.size()) {
+            ++ihi;
+        }
+    }
+    if (j < entries.size()) {
+        cur_image_idx_[active_] = j;
+        Glib::ustring prev, next;
+        if (options.maxInspectorBuffers > 2) {
+            for (size_t i = j; i > 0; --i) {
+                if (!entries[i-1]->filtered) {
+                    prev = entries[i-1]->filename;
+                    break;
+                }
+            }
+        }
+        if (options.maxInspectorBuffers > 1) {
+            for (size_t i = j+1; i < entries.size(); ++i) {
+                if (!entries[i]->filtered) {
+                    next = entries[i]->filename;
+                    break;
+                }
+            }
+        }
+        idle_register_.add(
+            [this,prev,next]() -> bool
+            {
+                if (!next.empty()) {
+                    ins_[active_].preloadImage(next);
+                }
+                if (!prev.empty()) {
+                    ins_[active_].preloadImage(prev);
+                }
+                return false;
+            });
     }
 }
 
