@@ -343,7 +343,7 @@ std::shared_ptr<InspectorBuffer> InspectorArea::doCacheImage(const Glib::ustring
 
 void InspectorArea::preloadImage(const Glib::ustring &fullPath)
 {
-    std::cout << "PRELOAD: " << fullPath << std::endl;
+    //std::cout << "PRELOAD: " << fullPath << std::endl;
     doCacheImage(fullPath);
 }
 
