@@ -120,6 +120,9 @@
 // NIKON D2H
 // NIKON Z50_2
 // NIKON Z5_2
+//
+// updated on Fri Dec 19 08:24:34 2025:
+// CANON EOS R5 MARK II
 
 [
   {
@@ -6551,6 +6554,17 @@
       { "name" : "day white fluorescent", "multipliers" : [ 1.755859375, 1, 1.443359375 ] },
       { "name" : "daylight fluorescent", "multipliers" : [ 2.0, 1, 1.171875 ] },
       { "name" : "flash", "multipliers" : [ 2.111328125, 1, 1.255859375 ] }
+    ]
+  },
+  {
+    "make_model" : "CANON EOS R5 MARK II",
+    "presets" : [
+      { "name" : "daylight", "multipliers" : [ 1.8720703125, 1, 1.5517578125 ] },
+      { "name" : "shade", "multipliers" : [ 2.1787109375, 1, 1.3056640625 ] },
+      { "name" : "cloudy", "multipliers" : [ 2.02734375, 1, 1.421875 ] },
+      { "name" : "tungsten", "multipliers" : [ 1.3193359375, 1, 2.337890625 ] },
+      { "name" : "cool white fluorescent", "multipliers" : [ 1.5703125, 1, 2.2861328125 ] },
+      { "name" : "flash", "multipliers" : [ 2.068359375, 1, 1.41015625 ] }
     ]
   }
 ]
