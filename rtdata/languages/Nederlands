@@ -43,6 +43,7 @@
 #42 28-07-24 update naar ART v1.24 door pm
 #43 08-09-25 update naar ART v1.25.8 door pm
 #44 12-11-25 update naar ART v1.25.9 door pm
+#45 19-12-25 update naar ART v1.25.12 door pm
 
 ABOUT_TAB_BUILD;Versie
 ABOUT_TAB_CREDITS;Credits
@@ -227,6 +228,9 @@ FILEBROWSER_RANK3_TOOLTIP;Waardering 3 *\nSneltoets: Shift+3
 FILEBROWSER_RANK4_TOOLTIP;Waardering 4 *\nSneltoets: Shift+4
 FILEBROWSER_RANK5_TOOLTIP;Waardering 5 *\nSneltoets: Shift+5
 FILEBROWSER_RENAMEDLGLABEL; Hernoem bestand(en)
+FILEBROWSER_RENAME_DIALOG_LOAD_TIP;Laad instellingen uit bestand
+FILEBROWSER_RENAME_DIALOG_SAVE_TIP;Bewaar instellingen naar bestand
+FILEBROWSER_RENAME_DIALOG_RESET_TIP;Herstel instellingen naar standaardwaarden
 FILEBROWSER_RESETDEFAULTPROFILE;Terugzetten naar standaardwaarde
 FILEBROWSER_SELECTDARKFRAME;Kies donkerframe...
 FILEBROWSER_SELECTFLATFIELD;Kies vlakveldopname...
@@ -274,6 +278,7 @@ FILECHOOSER_FILTER_ANY;Alle bestanden
 FILECHOOSER_FILTER_COLPROF;Kleurprofielen (*.icc)
 FILECHOOSER_FILTER_CURVE;Curvebestanden
 FILECHOOSER_FILTER_LCP;Lenscorrectieprofielen
+FILECHOOSER_FILTER_INI;Configuratiebestanden (*.ini)
 FILECHOOSER_FILTER_PP;Verwerkingsprofielen
 FILECHOOSER_FILTER_SAME;Zelfde formaat als huidige foto
 FILECHOOSER_FILTER_TIFF;TIFF-bestanden
@@ -299,6 +304,7 @@ GENERAL_ENABLED;Aan
 GENERAL_FILE;Bestand
 GENERAL_HIGH;Hoog
 GENERAL_LANDSCAPE;Landschap
+GENERAL_LOAD;Laad
 GENERAL_LOW;Laag
 GENERAL_MEDIUM;Medium
 GENERAL_NA;nvt.
@@ -1096,6 +1102,7 @@ PREFERENCES_FORRAW;Voor raw-bestanden
 PREFERENCES_FSTRIP_SAME_THUMB_HEIGHT_HINT;Verschillende groottes van miniaturen vereist meer verwerkingstijd wanneer je wisselt tussen het enkel-tabs Bewerkingsvenster en de Navigator
 PREFERENCES_FSTRIP_SAME_THUMB_HEIGHT;Zelfde hoogte miniaturen in Filmstrip en Bestandsnavigator
 PREFERENCES_GIMPPATH;Installatiemap GIMP
+PREFERENCES_HIGHLIGHT_SELECTED_THUMBNAILS;Markeer geselecteerde miniaturen
 PREFERENCES_HISTOGRAMPOSITIONLEFT;Histogram in linkerpaneel
 PREFERENCES_HISTOGRAM_TOOLTIP;Indien ingeschakeld wordt het werkprofiel gebruikt om het histogram te genereren. Zo niet, dan wordt het gamma-gecorrigeerde uitvoerprofiel gebruikt. 
 PREFERENCES_HLTHRESHOLD;Grenswaarde overbelichting
