@@ -663,6 +663,10 @@ bool Inspector::keyPressed(GdkEventKey *evt)
 
 void Inspector::switchImage(const Glib::ustring &fullPath)
 {
+    if (!isActive()) {
+        return;
+    }
+    
     cur_image_[active_] = fullPath;
     if (info_->get_active()) {
         ins_[active_].setInfoText(get_info_text(active_));
