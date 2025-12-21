@@ -25,6 +25,7 @@
 #include <cairomm/cairomm.h>
 
 #include <assert.h>
+#include <iostream>
 
 #ifdef WIN32
 #include <windows.h>
@@ -2207,14 +2208,15 @@ void initGUIColorManagement()
 guint getKeyval(GdkEventKey *event, bool consider_shift)
 {
     auto res = event->keyval;
-    // #ifdef __APPLE__
     if (event->state & GDK_MODIFIER_MASK) {
         GdkKeymap *km = gdk_keymap_get_default();
         GdkKeymapKey key{event->hardware_keycode, 0,
                          consider_shift && (event->state & GDK_SHIFT_MASK) ? 1
                                                                            : 0};
-        res = gdk_keymap_lookup_key(km, &key);
+        auto r = gdk_keymap_lookup_key(km, &key);
+        if (r) {
+            res = r;
+        }
     }
-    // #endif
     return res;
 }
