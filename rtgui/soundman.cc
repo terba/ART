@@ -22,8 +22,8 @@
 #include "options.h"
 
 #ifdef WIN32
-#include <mmsystem.h>
 #include <windows.h>
+#include <mmsystem.h>
 #endif
 
 #ifdef __linux__

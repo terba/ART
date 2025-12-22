@@ -51,9 +51,9 @@
 #include <glibmm/fileutils.h>
 #include <glibmm/threads.h>
 #else
+#include <windows.h>
 #include "conio.h"
 #include <glibmm/thread.h>
-#include <windows.h>
 #endif
 
 #include <chrono>

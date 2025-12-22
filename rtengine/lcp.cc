@@ -17,15 +17,15 @@
  *  along with RawTherapee.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <algorithm>
-#include <cstring>
-
-#include <glib/gstdio.h>
-
 #ifdef WIN32
 #include <shlobj.h>
 #include <windows.h>
 #endif
+
+#include <algorithm>
+#include <cstring>
+
+#include <glib/gstdio.h>
 
 #include "lcp.h"
 

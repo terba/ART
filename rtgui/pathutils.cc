@@ -25,9 +25,9 @@
 #include <glibmm/threads.h>
 #include <unistd.h>
 #else // WIN32
+#include <windows.h>
 #include "conio.h"
 #include <glibmm/thread.h>
-#include <windows.h>
 #endif
 
 #ifdef __APPLE__

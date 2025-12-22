@@ -21,9 +21,9 @@
 #include <algorithm>
 
 #ifdef WIN32
+#include <windows.h>
 #include <Shlwapi.h>
 #include <shlobj.h>
-#include <windows.h>
 #endif
 
 #include "guiutils.h"

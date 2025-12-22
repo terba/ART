@@ -26,8 +26,8 @@
 #include <thread>
 
 #ifdef WIN32
-#include <shlobj.h>
 #include <windows.h>
+#include <shlobj.h>
 #endif
 
 #include "../rtengine/subprocess.h"

@@ -25,8 +25,8 @@
 
 #ifdef WIN32
 
-#include <fcntl.h>
 #include <windows.h>
+#include <fcntl.h>
 
 // dummy values
 #define MAP_PRIVATE 1
