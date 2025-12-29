@@ -462,16 +462,6 @@ RTWindow::RTWindow()
         main_widget = epanel;
 
         pldBridge = nullptr; // No progress listener
-
-        CacheManager *cm = CacheManager::getInstance();
-        Thumbnail *thm = cm->getEntry(argv1);
-
-        if (thm) {
-            int error;
-            rtengine::InitialImage *ii = rtengine::InitialImage::load(
-                argv1, thm->getType() == FT_Raw, &error, nullptr);
-            epanel->open(thm, ii);
-        }
     } else {
         mainNB = Gtk::manage(new Gtk::Notebook());
         mainNB->set_name("MainNotebook");
@@ -624,6 +614,18 @@ RTWindow::RTWindow()
         return false;
     };
     signal_map_event().connect(sigc::slot<bool, GdkEventAny *>(on_show));
+
+    if (simpleEditor) {
+        CacheManager *cm = CacheManager::getInstance();
+        Thumbnail *thm = cm->getEntry(argv1);
+
+        if (thm) {
+            int error;
+            rtengine::InitialImage *ii = rtengine::InitialImage::load(
+                argv1, thm->getType() == FT_Raw, &error, nullptr);
+            epanel->open(thm, ii);
+        }
+    }
 }
 
 bool RTWindow::on_draw(const ::Cairo::RefPtr<::Cairo::Context> &cr)
