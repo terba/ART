@@ -800,7 +800,7 @@ bool ThumbBrowserEntryBase::releaseNotify(int button, int type, int bstate,
                                           int x, int y)
 {
 
-    return buttonSet ? buttonSet->releaseNotify(x, y) : false;
+    return buttonSet ? buttonSet->releaseNotify(x, y, bstate) : false;
 }
 
 Glib::ustring ThumbBrowserEntryBase::getToolTip(int x, int y) const

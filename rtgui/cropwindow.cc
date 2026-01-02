@@ -920,7 +920,7 @@ void CropWindow::buttonRelease(int button, int num, int bstate, int x, int y)
     }
 
     if (decorated) {
-        buttonSet.releaseNotify(x, y);
+        buttonSet.releaseNotify(x, y, bstate);
     }
 
     if (deleted) {
@@ -2538,7 +2538,7 @@ void CropWindow::zoomFit()
 }
 
 void CropWindow::buttonPressed(LWButton *button, int actionCode,
-                               void *actionData)
+                               void *actionData, int bstate)
 {
 
     if (button == bZoomIn) { // zoom in

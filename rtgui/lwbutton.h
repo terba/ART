@@ -1,4 +1,5 @@
-/*
+/* -*- C++ -*-
+ *  
  *  This file is part of RawTherapee.
  *
  *  Copyright (c) 2004-2010 Gabor Horvath <hgabor@rawtherapee.com>
@@ -28,7 +29,7 @@ class LWButtonListener {
 public:
     virtual ~LWButtonListener() = default;
     virtual void buttonPressed(LWButton *button, int actionCode,
-                               void *actionData) = 0;
+                               void *actionData, int bstate) = 0;
     virtual void redrawNeeded(LWButton *button) = 0;
 };
 
@@ -67,7 +68,7 @@ public:
 
     bool motionNotify(int x, int y);
     bool pressNotify(int x, int y);
-    bool releaseNotify(int x, int y);
+    bool releaseNotify(int x, int y, int bstate);
 
     Glib::ustring getToolTip(int x, int y) const;
 

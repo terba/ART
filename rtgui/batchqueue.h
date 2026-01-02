@@ -81,7 +81,7 @@ public:
     void doubleClicked(ThumbBrowserEntryBase *entry) override;
     bool keyPressed(GdkEventKey *event) override;
     void buttonPressed(LWButton *button, int actionCode,
-                       void *actionData) override;
+                       void *actionData, int bstate) override;
     void redrawNeeded(LWButton *button) override;
 
     void setBatchQueueListener(BatchQueueListener *l) { listener = l; }

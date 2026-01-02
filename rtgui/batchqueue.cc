@@ -1178,7 +1178,7 @@ Glib::ustring BatchQueue::autoCompleteFileName(const Glib::ustring &fileName,
 }
 
 void BatchQueue::buttonPressed(LWButton *button, int actionCode,
-                               void *actionData)
+                               void *actionData, int bstate)
 {
     const std::vector<ThumbBrowserEntryBase *> bqe = {
         static_cast<BatchQueueEntry *>(actionData)};

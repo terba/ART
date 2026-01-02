@@ -141,7 +141,7 @@ bool LWButton::pressNotify(int x, int y)
     return in;
 }
 
-bool LWButton::releaseNotify(int x, int y)
+bool LWButton::releaseNotify(int x, int y, int bstate)
 {
 
     bool in = inside(x, y);
@@ -168,7 +168,7 @@ bool LWButton::releaseNotify(int x, int y)
     }
 
     if (action && listener) {
-        listener->buttonPressed(this, actionCode, actionData);
+        listener->buttonPressed(this, actionCode, actionData, bstate);
     }
 
     return ret;

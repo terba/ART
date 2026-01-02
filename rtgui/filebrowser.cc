@@ -1998,7 +1998,7 @@ void FileBrowser::requestColorLabel(int colorlabel)
 }
 
 void FileBrowser::buttonPressed(LWButton *button, int actionCode,
-                                void *actionData)
+                                void *actionData, int bstate)
 {
 
     if (actionCode >= 0 && actionCode <= 5) { // rank
@@ -2008,7 +2008,7 @@ void FileBrowser::buttonPressed(LWButton *button, int actionCode,
     } else if (actionCode == 6 && tbl) { // to processing queue
         std::vector<FileBrowserEntry *> tbe;
         tbe.push_back(static_cast<FileBrowserEntry *>(actionData));
-        tbl->developRequested(tbe, false); // not a fast, but a FULL mode
+        tbl->developRequested(tbe, bstate & GDK_CONTROL_MASK);
     } else if (actionCode == 7) {          // to trash / undelete
         std::vector<FileBrowserEntry *> tbe;
         FileBrowserEntry *entry = static_cast<FileBrowserEntry *>(actionData);

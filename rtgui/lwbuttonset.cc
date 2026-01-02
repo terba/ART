@@ -143,13 +143,13 @@ bool LWButtonSet::pressNotify(int x, int y)
     return res;
 }
 
-bool LWButtonSet::releaseNotify(int x, int y)
+bool LWButtonSet::releaseNotify(int x, int y, int bstate)
 {
 
     bool res = false;
 
     for (size_t i = 0; i < buttons.size(); i++) {
-        bool handled = buttons[i]->releaseNotify(x, y);
+        bool handled = buttons[i]->releaseNotify(x, y, bstate);
         res = res || handled;
     }
 

@@ -169,7 +169,7 @@ public:
     int getNumFiltered() { return numFiltered; }
 
     void buttonPressed(LWButton *button, int actionCode,
-                       void *actionData) override;
+                       void *actionData, int bstate) override;
     void redrawNeeded(LWButton *button) override;
     bool checkFilter(ThumbBrowserEntryBase *entry) override;
     void rightClicked(ThumbBrowserEntryBase *entry) override;

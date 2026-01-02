@@ -246,7 +246,7 @@ public:
 
     // interface lwbuttonlistener
     void buttonPressed(LWButton *button, int actionCode,
-                       void *actionData) override;
+                       void *actionData, int bstate) override;
     void redrawNeeded(LWButton *button) override;
 
     // crop handling
