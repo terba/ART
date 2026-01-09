@@ -2669,6 +2669,23 @@
     ]
   },
   {
+    "make_model" : "NIKON Z 5",
+    "presets" : [
+      { "name" : "direct sunlight", "multipliers" : [ 1.86328125, 1, 1.376953125 ] },
+      { "name" : "cloudy", "multipliers" : [ 1.986328125, 1, 1.25390625 ] },
+      { "name" : "shade", "multipliers" : [ 2.26171875, 1, 1.134765625 ] },
+      { "name" : "incandescent", "multipliers" : [ 1.2109375, 1, 2.123046875 ] },
+      { "name" : "sodium-vapor fluorescent", "multipliers" : [ 1.15625, 1, 2.390625 ] },
+      { "name" : "warm white fluorescent", "multipliers" : [ 1.212890625, 1, 1.880859375 ] },
+      { "name" : "white fluorescent", "multipliers" : [ 1.4140625, 1, 2.24609375 ] },
+      { "name" : "cool white fluorescent", "multipliers" : [ 1.720703125, 1, 1.994140625 ] },
+      { "name" : "day white fluorescent", "multipliers" : [ 1.73828125, 1, 1.369140625 ] },
+      { "name" : "daylight fluorescent", "multipliers" : [ 1.97265625, 1, 1.125 ] },
+      { "name" : "high temp. mercury-vapor fluorescent", "multipliers" : [ 2.2890625, 1, 1.3515625 ] },
+      { "name" : "flash", "multipliers" : [ 2.060546875, 1, 1.208984375 ] }
+    ]
+  },
+  {
     "make_model" : "NIKON Z 6",
     "presets" : [
       { "name" : "direct sunlight", "multipliers" : [ 1.72656, 1, 1.33594 ] },
