@@ -1,4 +1,4 @@
-## A(nother) RT
+## ART - a raw toolbox
 
 This is the repository of ART, a [free, open-source](https://www.gnu.org/philosophy/philosophy.html), cross-platform 
 raw image processing program. 
