@@ -37,7 +37,10 @@ bool SplashImage::on_draw(const ::Cairo::RefPtr<Cairo::Context> &cr)
 
     Glib::RefPtr<Gdk::Window> window = get_window();
     cr->set_source(surface, 0., 0.);
-    cr->rectangle(0, 0, surface->get_width(), surface->get_height());
+    int s = RTScalable::getDeviceScale();
+    int sw = surface->get_width() / s;
+    int sh = surface->get_height() / s;
+    cr->rectangle(0, 0, sw, sh);
     cr->fill();
 
     Cairo::FontOptions cfo;
@@ -58,7 +61,7 @@ bool SplashImage::on_draw(const ::Cairo::RefPtr<Cairo::Context> &cr)
     cr->set_source_rgb(0., 0., 0.);
     cr->set_line_width(3.);
     cr->set_line_join(Cairo::LINE_JOIN_ROUND);
-    cr->move_to(surface->get_width() - w - 32, surface->get_height() - h - 20);
+    cr->move_to(sw - w - 32, sh - h - 20);
     version->add_to_cairo_context(cr);
     cr->stroke_preserve();
     cr->set_source_rgb(1., 1., 1.);
@@ -77,15 +80,17 @@ Gtk::SizeRequestMode SplashImage::get_request_mode_vfunc() const
 void SplashImage::get_preferred_height_vfunc(int &minimum_height,
                                              int &natural_height) const
 {
+    int s = RTScalable::getDeviceScale();
     minimum_height = natural_height =
-        surface ? surface->get_height() : 100 * RTScalable::getScale();
+        surface ? surface->get_height() / s : 100 * RTScalable::getScale();
 }
 
 void SplashImage::get_preferred_width_vfunc(int &minimum_width,
                                             int &natural_width) const
 {
+    int s = RTScalable::getDeviceScale();
     minimum_width = natural_width =
-        surface ? surface->get_width() : 100 * RTScalable::getScale();
+        surface ? surface->get_width() / s : 100 * RTScalable::getScale();
 }
 
 void SplashImage::get_preferred_height_for_width_vfunc(
