@@ -257,6 +257,18 @@ def make_info_plist(opts):
         <string>ART requires permission to access the Downloads folder.</string>
         <key>NSRemovableVolumesUsageDescription</key>
         <string>ART requires permission to access files on Removable Volumes.</string>        
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.image</string>
+				<string>public.directory</string>
+			</array>
+		</dict>
+	</array>
     </dict>
 </plist>
 """)
