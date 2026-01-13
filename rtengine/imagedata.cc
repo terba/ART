@@ -874,7 +874,7 @@ void FramesData::fillBasicTags(Exiv2::ExifData &exif) const
     if (!hasExif()) {
         return;
     }
-    set_exif(exif, "Exif.Photo.ISOSpeedRatings", getISOSpeed());
+    set_exif(exif, "Exif.Photo.ISOSpeedRatings", std::to_string(getISOSpeed()));
     set_exif(
         exif, "Exif.Photo.FNumber",
         Exiv2::URationalValue(Exiv2::URational(round(getFNumber() * 10), 10)));
