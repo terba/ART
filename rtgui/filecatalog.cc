@@ -1115,6 +1115,21 @@ void FileCatalog::dirSelected(const Glib::ustring &dirname,
     }
 }
 
+
+void FileCatalog::openFile(const Glib::ustring &fname)
+{
+    GThreadLock lock;
+    const std::vector<ThumbBrowserEntryBase *> &t = fileBrowser->getEntries();
+    for (const auto &entry : t) {
+        if (entry->filename == fname) {
+            openRequested({entry->thumbnail});
+            return;
+        }
+    }
+    filename_to_open_ = fname;
+}
+
+
 void FileCatalog::enableTabMode(bool enable)
 {
     inTabMode = enable;
@@ -1198,6 +1213,10 @@ void FileCatalog::previewReady(int dir_id, FileBrowserEntry *fdn)
         if (++refresh_counter_ % 20 == 0) {
             fileBrowser->enableThumbRefresh();
         }
+    }
+    if (filename_to_open_ == fdn->filename) {
+        openRequested({fdn->thumbnail});
+        filename_to_open_ = "";
     }
 
     // update exif filter settings (minimal & maximal values of exif tags,
@@ -1347,6 +1366,8 @@ void FileCatalog::previewsFinished(int dir_id)
         MyMutex::MyLock lock(dirEFSMutex);
         currentEFS = dirEFS;
     }
+
+    filename_to_open_ = "";
 
     idle_register.add([this]() -> bool {
         previewsFinishedUI();
@@ -2354,9 +2375,8 @@ void FileCatalog::toggleRightPanel()
     tbRightPanel_1->set_active(!tbRightPanel_1->get_active());
 }
 
-void FileCatalog::selectImage(Glib::ustring fname, bool clearFilters)
+void FileCatalog::selectImage(const Glib::ustring &fname, bool clearFilters)
 {
-
     Glib::ustring dirname = Glib::path_get_dirname(fname);
     if (/* art::session::check(selectedDirectory) &&*/ file_name_set_.find(
             fname) != file_name_set_.end()) {

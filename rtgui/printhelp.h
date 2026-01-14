@@ -38,7 +38,9 @@ inline void ART_print_help(std::ostream &out, const char *progname, bool gui)
             << "  -Sc Clear the session\n"
             << "  -Sa <file1> [... <fileN>] Add the files to the session\n"
             << "  -Sr <file1> [... <fileN>] Remove the files from the "
-               "session\n";
+               "session\n"
+            << "  -So <file1> [... <fileN>] Add the files to the session "
+               "and open the first one in the editor\n";
         out << "  -h -? Display this help message\n";
     } else {
         Glib::ustring pparamsExt = paramFileExtension.substr(1);

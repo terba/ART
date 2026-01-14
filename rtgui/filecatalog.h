@@ -56,8 +56,8 @@ private:
     bool enabled;
     bool inTabMode; // Tab mode has e.g. different progress bar handling
     Glib::ustring imageToSelect_fname;
-    Glib::ustring
-        refImageForOpen_fname; // Next/previous for Editor's perspective
+    Glib::ustring refImageForOpen_fname; // Next/previous for Editor's perspective
+    Glib::ustring filename_to_open_;
     eRTNav actionNextPrevious;
 
     FileSelectionListener *listener;
@@ -185,6 +185,7 @@ public:
                      const Glib::ustring &openfile);
     void closeDir();
     void refreshEditedState(const std::set<Glib::ustring> &efiles);
+    void openFile(const Glib::ustring &fname);
 
     // previewloaderlistener interface
     void previewReady(int dir_id, FileBrowserEntry *fdn) override;
@@ -273,7 +274,7 @@ public:
 
     void openNextImage() { fileBrowser->openNextImage(); }
     void openPrevImage() { fileBrowser->openPrevImage(); }
-    void selectImage(Glib::ustring fname, bool clearFilters);
+    void selectImage(const Glib::ustring &fname, bool clearFilters);
     bool isSelected(const Glib::ustring &fname) const;
     void openNextPreviousEditorImage(Glib::ustring fname, bool clearFilters,
                                      eRTNav nextPrevious);

@@ -176,15 +176,18 @@ int processLineParams(int argc, char **argv)
                     } else if (currParam == "-Sc") {
                         art::session::clear();
                         break;
-                    } else if (currParam == "-Sa" || currParam == "-Sr") {
+                    } else if (currParam == "-Sa" || currParam == "-Sr" || currParam == "-So") {
                         std::vector<Glib::ustring> fnames;
                         ++iArg;
                         while (iArg < argc && argv[iArg][0] != '-') {
                             fnames.emplace_back(fname_to_utf8(argv[iArg]));
                             ++iArg;
                         }
-                        if (currParam == "-Sa") {
+                        if (currParam != "-Sr") {
                             art::session::add(fnames);
+                            if (currParam == "-So" && !fnames.empty()) {
+                                argv1 = Glib::ustring(fname_to_utf8(fnames[0]));
+                            }
                         } else {
                             art::session::remove(fnames);
                         }
@@ -351,14 +354,35 @@ public:
         if (is_session) {
             bool raise = !rtWindow;
             if (create_window()) {
+                struct Data {
+                    Glib::ustring fname;
+                    FileCatalog *filecatalog;
+                };
                 const auto doit = [](gpointer data) -> gboolean {
-                    FileCatalog *filecatalog = static_cast<FileCatalog *>(data);
+                    Data *d = static_cast<Data *>(data);
+                    FileCatalog *filecatalog = d->filecatalog;
+                    Glib::ustring fname = "";
+                    if (!d->fname.empty()) {
+                        for (auto n : art::session::list()) {
+                            if (d->fname == n) {
+                                fname = n;
+                                break;
+                            }
+                        }
+                    }
                     if (!art::session::check(filecatalog->lastSelectedDir())) {
                         filecatalog->dirSelected(art::session::path(), "");
                     }
+                    if (!fname.empty()) {
+                        filecatalog->openFile(fname);
+                    }
+                    delete d;
                     return FALSE;
                 };
-                gdk_threads_add_idle(doit, rtWindow->fpanel->fileCatalog);
+                Data *d = new Data;
+                d->filecatalog = rtWindow->fpanel->fileCatalog;
+                d->fname = ((argc > 1) ? argv[1] : "");
+                gdk_threads_add_idle(doit, d);
                 if (raise) {
                     rtWindow->present();
                 }
